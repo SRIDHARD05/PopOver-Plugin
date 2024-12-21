@@ -1,5 +1,5 @@
-
 document.addEventListener('DOMContentLoaded', function () {
+    // Example Usage
     const popover = new Popover('#popover-trigger', {
         placement: 'bottom',
         trigger: 'click',
@@ -24,12 +24,6 @@ document.addEventListener('DOMContentLoaded', function () {
                 "margin-left": "-5px",
                 border: "1px solid #ddd",
                 "z-index": -1
-            },
-            show: {
-                display: "block"
-            },
-            body: {
-                "margin-top": "1rem"
             }
         },
         class: {
@@ -37,7 +31,14 @@ document.addEventListener('DOMContentLoaded', function () {
             arrow: 'custom-arrow',
             body: 'bg-light p-3'
         },
-        content: [
+        popover_head: [
+            {
+                title: 'Popover Title',
+                class: 'custom-header',
+                id: 'popover-header-id'
+            }
+        ],
+        popover_body: [
             {
                 type: 'input',
                 id: 'input-field',
@@ -46,7 +47,7 @@ document.addEventListener('DOMContentLoaded', function () {
                 placeholder: 'Username',
                 defaultValue: '',
                 class: 'form-control',
-                validation: /^[a-zA-Z0-9_]+$/ 
+                validation: /^[a-zA-Z0-9_]+$/
             },
             {
                 type: 'checkbox',
@@ -56,41 +57,69 @@ document.addEventListener('DOMContentLoaded', function () {
                 class: 'form-check-input',
                 items: [
                     {
+                        placeholder: 'Username',
+                        class: '',
                         id: 'terms',
                         name: 'terms',
                         label: 'I accept the terms',
                         checked: false
-                    },
-                    {
-                        id: 'privacy',
-                        name: 'privacy',
-                        label: 'I accept the privacy policy',
-                        checked: false
                     }
                 ]
+            },
+            {
+                type: 'datepicker',
+                id: 'start-date',
+                name: 'start-date',
+                label: 'Start Date:'
+            },
+            {
+                type: 'range',
+                id: 'priority',
+                name: 'priority',
+                min: 1,
+                max: 10,
+                step: 1,
+                label: 'Priority:'
+            },
+            {
+                type: 'input-range',
+                id: 'budget',
+                name: 'budget',
+                min: 0,
+                max: 1000,
+                step: 10,
+                label: 'Budget Range:'
+            },
+            {
+                type: 'input',
+                id: 'budget',
+                name: 'budget',
+                type: 'email',
+                label: 'Budget Range:'
             }
+
         ],
-        submit: {
-            id: 'submit-btn',
-            name: 'Submit',
-            class: 'btn btn-primary',
-            type: 'submit',
-            onClick: function (values) {
-                console.log(values); // Handle submit logic here
-            }
-        },
-        cancel: {
-            id: 'cancel-btn',
-            name: 'Cancel',
-            class: 'btn btn-secondary',
-            type: 'hide',
-            onClick: function () {
-                console.log('Popover canceled'); // Handle cancel logic here
-                $('.popover').popover('hide');
+        popover_footer: {
+            submit: {
+                id: 'submit-btn',
+                name: 'Submit',
+                class: 'btn btn-primary',
+                type: 'submit',
+                onClick: function (values) {
+                    console.log('Form submitted with values:', values);
+                }
+            },
+            cancel: {
+                id: 'cancel-btn',
+                name: 'Cancel',
+                class: 'btn btn-secondary',
+                type: 'hide',
+                onClick: function () {
+                    console.log('Popover canceled');
+                }
             }
         }
     });
-
 
 });
 

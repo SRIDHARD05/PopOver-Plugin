@@ -23,6 +23,9 @@ class Popover {
             });
 
             document.addEventListener('click', () => this.hidePopover());
+        } else if (trigger === 'hover') {
+            this.triggerElement.addEventListener('mouseover', () => this.showPopover());
+            this.triggerElement.addEventListener('mouseout', () => this.hidePopover());
         }
     }
 
@@ -30,8 +33,7 @@ class Popover {
         if (!this.popover) {
             this.createPopover();
         }
-        this.applyStyles();
-        this.applyClasses();
+        this.applyStylesAndClasses();
         this.positionPopover();
         this.popover.classList.add('show');
     }
@@ -43,153 +45,134 @@ class Popover {
     }
 
     createPopover() {
-        const { content = [], submit, cancel } = this.options;
-
-        if (!this.validateContent(content)) {
-            console.error('Invalid content configuration. Please check your options.');
-            return;
-        }
+        const { popover_head = [], popover_body = [], popover_footer = {} } = this.options;
 
         this.popover = document.createElement('div');
-        this.popover.className = 'popover interactive-popover';
+        this.popover.className = 'popover';
 
-        const contentHTML = this.generateContentHTML(content);
-        const buttonsHTML = this.generateButtonsHTML({ submit, cancel });
+        const headerHTML = this.generateHeaderHTML(popover_head);
+        const bodyHTML = this.generateBodyHTML(popover_body);
+        const footerHTML = this.generateFooterHTML(popover_footer);
 
         this.popover.innerHTML = `
             <div class="popover-arrow"></div>
-            <div class="popover-body">
-                ${contentHTML}
-                <div class="d-flex justify-content-end gap-2 mt-3">
-                    ${buttonsHTML}
-                </div>
-            </div>
+            ${headerHTML ? `<div class="popover-header">${headerHTML}</div>` : ''}
+            ${bodyHTML ? `<div class="popover-body">${bodyHTML}</div>` : ''}
+            ${footerHTML ? `<div class="popover-footer">${footerHTML}</div>` : ''}
         `;
 
         document.body.appendChild(this.popover);
-
-        this.bindButtonEvents({ submit, cancel });
+        this.bindFooterEvents(popover_footer);
     }
 
-    applyStyles() {
-        const { style = {} } = this.options;
+    applyStylesAndClasses() {
+        const { style = {}, class: classes = {} } = this.options;
 
         if (style.popover) {
             Object.assign(this.popover.style, style.popover);
+        }
+        if (classes.popover) {
+            this.popover.classList.add(...classes.popover.split(' '));
         }
 
         const arrow = this.popover.querySelector('.popover-arrow');
         if (arrow && style.arrow) {
             Object.assign(arrow.style, style.arrow);
         }
-
-        const body = this.popover.querySelector('.popover-body');
-        if (body && style.body) {
-            Object.assign(body.style, style.body);
-        }
-
-        if (this.popover.classList.contains('show') && style.show) {
-            Object.assign(this.popover.style, style.show);
+        if (arrow && classes.arrow) {
+            arrow.classList.add(...classes.arrow.split(' '));
         }
     }
 
-    applyClasses() {
-        const { class: classNames = {} } = this.options;
-
-        if (classNames.popover) {
-            this.popover.classList.add(...classNames.popover.split(' '));
-        }
-
-        const arrow = this.popover.querySelector('.popover-arrow');
-        if (arrow && classNames.arrow) {
-            arrow.classList.add(...classNames.arrow.split(' '));
-        }
-
-        const body = this.popover.querySelector('.popover-body');
-        if (body && classNames.body) {
-            body.classList.add(...classNames.body.split(' '));
-        }
+    generateHeaderHTML(headerConfig) {
+        if (!headerConfig || !Array.isArray(headerConfig)) return '';
+        return headerConfig
+            .map(
+                ({ title, class: className = '', id = '' }) =>
+                    `<div class="${className}" id="${id}">${title || ''}</div>`
+            )
+            .join('');
     }
 
-    validateContent(content) {
-        const validTypes = ['datepicker', 'checkbox', 'range', 'input', 'input-range'];
-        return content.every((item) => {
-            if (!validTypes.includes(item.type)) {
-                console.error(`Unsupported content type: ${item.type}`);
-                return false;
-            }
-
-            if (item.type === 'checkbox' && (!item.items || !Array.isArray(item.items))) {
-                console.error('Checkbox content must have an "items" array.');
-                return false;
-            }
-
-            if (item.type === 'range' && (item.min === undefined || item.max === undefined)) {
-                console.error('Range content must specify "min" and "max" values.');
-                return false;
-            }
-
-            if (item.type === 'input' && item.validation && !(item.validation instanceof RegExp)) {
-                console.error('Input validation must be a valid regular expression.');
-                return false;
-            }
-
-            if (item.type === 'input-range' && (!item.minInputId || !item.maxInputId)) {
-                console.error('Input-Range must specify "minInputId" and "maxInputId".');
-                return false;
-            }
-
-            return true;
-        });
-    }
-
-    generateContentHTML(content) {
-        return content
+    generateBodyHTML(bodyConfig) {
+        return bodyConfig
             .map((item) => {
-                const customClasses = item.contentClasses?.join(' ') || ''; // Add user-defined classes
                 switch (item.type) {
-                    case 'datepicker':
-                        return `<input type="date" id="${item.id}" class="${item.class} ${customClasses}" name="${item.name}">`;
-
-                    case 'checkbox':
-                        return item.items
-                            .map(
-                                (checkbox) => `  
-                                    <div class="form-check ${customClasses}">
-                                        <input type="checkbox" id="${checkbox.id}" class="form-check-input ${checkbox.class}" name="${checkbox.name}">
-                                        <label for="${checkbox.id}" class="form-check-label">${checkbox.name}</label>
-                                    </div>`
-                            )
-                            .join('');
-
-                    case 'range':
-                        return ` 
-                            <label for="${item.id}" class="form-label ${customClasses}">${item.name}</label>
-                            <input type="range" id="${item.id}" class="form-range ${item.class}" min="${item.min}" max="${item.max}" step="${item.step}">
-                        `;
-
                     case 'input':
-                        return ` 
-                            <label for="${item.id}" class="form-label ${customClasses}">${item.label || ''}</label>
+                        return `
+                            <label for="${item.id}">${item.label || ''}</label>
                             <input 
                                 type="text" 
                                 id="${item.id}" 
-                                class="form-control ${item.class}" 
+                                name="${item.name || ''}" 
                                 placeholder="${item.placeholder || ''}" 
                                 value="${item.defaultValue || ''}" 
-                                ${item.validation ? `pattern="${item.validation.source}"` : ''} 
-                            >
+                                class="${item.class || ''}" 
+                            />
                         `;
-
+                    case 'checkbox':
+                        return item.items
+                            .map(
+                                (checkbox) => `
+                                    <div>
+                                        <input 
+                                            type="checkbox" 
+                                            id="${checkbox.id}" 
+                                            name="${checkbox.name || ''}" 
+                                            ${checkbox.checked ? 'checked' : ''}
+                                        />
+                                        <label for="${checkbox.id}">${checkbox.label || ''}</label>
+                                    </div>
+                                `
+                            )
+                            .join('');
+                    case 'datepicker':
+                        return `
+                            <label for="${item.id}">${item.label || ''}</label>
+                            <input 
+                                type="date" 
+                                id="${item.id}" 
+                                name="${item.name || ''}" 
+                                class="${item.class || ''}" 
+                            />
+                        `;
+                    case 'range':
+                        return `
+                            <label for="${item.id}">${item.label || ''}</label>
+                            <input 
+                                type="range" 
+                                id="${item.id}" 
+                                name="${item.name || ''}" 
+                                min="${item.min || 0}" 
+                                max="${item.max || 100}" 
+                                step="${item.step || 1}" 
+                                class="${item.class || ''}" 
+                            />
+                        `;
                     case 'input-range':
-                        return ` 
-                            <div class="d-flex align-items-center gap-2 ${customClasses}">
-                                <label>${item.label || ''}</label>
-                                <input type="number" id="${item.minInputId}" class="form-control ${item.class}" placeholder="Min" min="${item.min}" max="${item.max}">
-                                <input type="number" id="${item.maxInputId}" class="form-control ${item.class}" placeholder="Max" min="${item.min}" max="${item.max}">
+                        return `
+                            <label>${item.label || ''}</label>
+                            <div class="d-flex justify-content-between align-items-center">
+                                <input 
+                                    type="range" 
+                                    id="${item.id}-min" 
+                                    name="${item.name || ''}_min" 
+                                    min="${item.min || 0}" 
+                                    max="${item.max || 100}" 
+                                    step="${item.step || 1}" 
+                                    class="${item.class || ''}" 
+                                />
+                                <input 
+                                    type="range" 
+                                    id="${item.id}-max" 
+                                    name="${item.name || ''}_max" 
+                                    min="${item.min || 0}" 
+                                    max="${item.max || 100}" 
+                                    step="${item.step || 1}" 
+                                    class="${item.class || ''}" 
+                                />
                             </div>
                         `;
-
                     default:
                         return '';
                 }
@@ -197,46 +180,35 @@ class Popover {
             .join('');
     }
 
-    generateButtonsHTML({ submit, cancel }) {
-        const buttons = [];
-        if (cancel) {
-            buttons.push(`
-                <button class="btn ${cancel.class}" id="${cancel.id}">
-                    ${cancel.name}
-                </button>
-            `);
-        }
-        if (submit) {
-            buttons.push(`
-                <button class="btn ${submit.class}" id="${submit.id}">
-                    ${submit.name}
-                </button>
-            `);
-        }
-        return buttons.join('');
+    generateFooterHTML(footerConfig) {
+        const { submit, cancel } = footerConfig;
+        return `
+            ${cancel
+                ? `<button class="${cancel.class || ''}" id="${cancel.id}" type="button">${cancel.name || 'Cancel'}</button>`
+                : ''
+            }
+            ${submit
+                ? `<button class="${submit.class || ''}" id="${submit.id}" type="button">${submit.name || 'Submit'}</button>`
+                : ''
+            }
+        `;
     }
 
-    bindButtonEvents({ submit, cancel }) {
+    bindFooterEvents(footerConfig) {
+        const { submit, cancel } = footerConfig;
         if (cancel) {
-            const cancelBtn = this.popover.querySelector(`#${cancel.id}`);
-            if (cancelBtn) {
-                cancelBtn.addEventListener('click', () => {
-                    if (cancel.type === 'hide') {
-                        this.hidePopover();
-                    }
-                    if (cancel.onClick) {
-                        cancel.onClick();
-                    }
-                });
+            const cancelButton = this.popover.querySelector(`#${cancel.id}`);
+            if (cancelButton && cancel.onClick) {
+                cancelButton.addEventListener('click', cancel.onClick);
             }
         }
 
         if (submit) {
-            const submitBtn = this.popover.querySelector(`#${submit.id}`);
-            if (submitBtn) {
-                submitBtn.addEventListener('click', () => {
-                    const values = this.collectContentValues();
-                    if (submit.type === 'submit' && submit.onClick) {
+            const submitButton = this.popover.querySelector(`#${submit.id}`);
+            if (submitButton) {
+                submitButton.addEventListener('click', () => {
+                    const values = this.collectFormData();
+                    if (submit.onClick) {
                         submit.onClick(values);
                     }
                 });
@@ -244,50 +216,37 @@ class Popover {
         }
     }
 
-    collectContentValues() {
-        const { content = [] } = this.options;
-        const values = [];
+    collectFormData() {
+        const { popover_body = [] } = this.options;
+        const data = {};
 
-        content.forEach((item) => {
+        popover_body.forEach((item) => {
             if (item.type === 'input' || item.type === 'datepicker' || item.type === 'range') {
-                const element = document.getElementById(item.id);
-                if (element) {
-                    values.push({
-                        id: item.id,
-                        name: item.name || item.label || item.id,
-                        value: element.value
-                    });
+                const input = this.popover.querySelector(`#${item.id}`);
+                if (input) {
+                    data[item.name || item.id] = input.value;
                 }
             } else if (item.type === 'checkbox') {
+                data[item.name || item.id] = [];
                 item.items.forEach((checkbox) => {
-                    const checkboxElement = document.getElementById(checkbox.id);
-                    if (checkboxElement) {
-                        values.push({
-                            id: checkbox.id,
-                            name: checkbox.name,
-                            value: checkboxElement.checked
-                        });
+                    const checkboxInput = this.popover.querySelector(`#${checkbox.id}`);
+                    if (checkboxInput && checkboxInput.checked) {
+                        data[item.name || item.id].push(checkbox.name || checkbox.id);
                     }
                 });
             } else if (item.type === 'input-range') {
-                const minElement = document.getElementById(item.minInputId);
-                const maxElement = document.getElementById(item.maxInputId);
-                if (minElement && maxElement) {
-                    values.push({
-                        id: item.minInputId,
-                        name: `${item.label || ''} Min`,
-                        value: minElement.value
-                    });
-                    values.push({
-                        id: item.maxInputId,
-                        name: `${item.label || ''} Max`,
-                        value: maxElement.value
-                    });
+                const minInput = this.popover.querySelector(`#${item.id}-min`);
+                const maxInput = this.popover.querySelector(`#${item.id}-max`);
+                if (minInput && maxInput) {
+                    data[item.name || item.id] = {
+                        min: minInput.value,
+                        max: maxInput.value,
+                    };
                 }
             }
         });
 
-        return values;
+        return data;
     }
 
     positionPopover() {
@@ -301,27 +260,23 @@ class Popover {
         switch (placement) {
             case 'top':
                 top = triggerRect.top - popoverRect.height;
-                left = triggerRect.left + (triggerRect.width - popoverRect.width) / 2;
-                break;
-            case 'right':
-                top = triggerRect.top + (triggerRect.height - popoverRect.height) / 2;
-                left = triggerRect.right;
+                left = triggerRect.left + triggerRect.width / 2 - popoverRect.width / 2;
                 break;
             case 'bottom':
                 top = triggerRect.bottom;
-                left = triggerRect.left + (triggerRect.width - popoverRect.width) / 2;
+                left = triggerRect.left + triggerRect.width / 2 - popoverRect.width / 2;
                 break;
             case 'left':
-                top = triggerRect.top + (triggerRect.height - popoverRect.height) / 2;
+                top = triggerRect.top + triggerRect.height / 2 - popoverRect.height / 2;
                 left = triggerRect.left - popoverRect.width;
                 break;
-            default:
-                throw new Error(`Unknown placement: ${placement}`);
+            case 'right':
+                top = triggerRect.top + triggerRect.height / 2 - popoverRect.height / 2;
+                left = triggerRect.right;
+                break;
         }
 
         this.popover.style.top = `${top}px`;
         this.popover.style.left = `${left}px`;
-        this.popover.style.position = 'absolute';
     }
 }
-

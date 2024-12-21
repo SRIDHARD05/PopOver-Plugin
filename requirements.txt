@@ -1,0 +1,20 @@
+1. when the cancel btn is clicked then close or hide the popover
+2. control the hide when the submit btn is clicked then assign the values to the varibale or json values then close the popovers
+3. user can create a multiple popovers when the popover is closed or hided 
+4. when the user clicks the outside the popover then hide the popover
+5. when the popover is hided then remove the corresponding codes for reusing the popovers in multiple times
+6. user can design btns are aligned in single row or one by one like 
+row = [
+    {
+        coloumn 1
+    },
+    {
+        coloumn 2
+    }
+]
+7. add the button components into the popover Body like range and datepicker
+8. design the datepicker with designs and also add the btns inside the datepicker
+9. convert the range slider to input range like range is placed inside the input elements like input elements having min and max inside the input element
+10. add the scroll bar inside the popover body
+11. design the input border
+12. 

@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Popover Plugin Demo</title>
+    <style>
+        .popover {
+            position: absolute;
+            z-index: 1000;
+            border: 1px solid #ccc;
+            background-color: #fff;
+            border-radius: 4px;
+            padding: 10px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+        }
+
+        .popover-arrow {
+            width: 0;
+            height: 0;
+            position: absolute;
+            border-style: solid;
+        }
+
+        .popover-header,
+        .popover-body,
+        .popover-footer {
+            margin-bottom: 10px;
+        }
+
+        .popover-footer {
+            text-align: right;
+        }
+    </style>
+</head>
+
+<body>
+    <button id="triggerBtn">Open Popover</button>
+
+    <script src="path/to/your/popover.js"></script>
+    <script>
+        // Initialize the plugin
+        new Popover('#triggerBtn', {
+            placement: 'bottom',
+            trigger: 'click',
+            popover_head: [
+                { title: 'Popover Header', class: 'header-class', id: 'header-id' }
+            ],
+            popover_body: [
+                {
+                    type: 'input',
+                    id: 'username',
+                    name: 'username',
+                    placeholder: 'Enter your username',
+                    label: 'Username:'
+                },
+                {
+                    type: 'checkbox',
+                    id: 'accept',
+                    name: 'accept',
+                    label: 'Select your preferences:',
+                    items: [
+                        { id: 'terms', name: 'terms', label: 'Accept Terms', checked: true },
+                        { id: 'updates', name: 'updates', label: 'Receive Updates' }
+                    ]
+                },
+                {
+                    type: 'datepicker',
+                    id: 'birthdate',
+                    name: 'birthdate',
+                    label: 'Select your birthdate:'
+                },
+                {
+                    type: 'range',
+                    id: 'volume',
+                    name: 'volume',
+                    label: 'Volume Control:',
+                    min: 0,
+                    max: 100,
+                    step: 5
+                },
+                {
+                    type: 'input-range',
+                    id: 'priceRange',
+                    name: 'priceRange',
+                    label: 'Select Price Range:',
+                    min: 0,
+                    max: 1000,
+                    step: 10
+                }
+            ],
+            popover_footer: {
+                submit: {
+                    id: 'submitBtn',
+                    class: 'btn-submit',
+                    name: 'Submit',
+                    onClick: (formData) => {
+                        console.log('Form Submitted:', formData);
+                        alert('Form Data: ' + JSON.stringify(formData, null, 2));
+                    }
+                },
+                cancel: {
+                    id: 'cancelBtn',
+                    class: 'btn-cancel',
+                    name: 'Cancel',
+                    onClick: () => {
+                        alert('Action Cancelled');
+                    }
+                }
+            },
+            style: {
+                popover: { backgroundColor: '#f9f9f9', border: '1px solid #ddd' },
+                arrow: { borderColor: '#ddd' }
+            },
+            class: {
+                popover: 'custom-popover',
+                arrow: 'custom-arrow'
+            }
+        });
+    </script>
+</body>
+
+</html>
