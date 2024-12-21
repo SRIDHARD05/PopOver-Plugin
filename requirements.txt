@@ -17,4 +17,6 @@ row = [
 9. convert the range slider to input range like range is placed inside the input elements like input elements having min and max inside the input element
 10. add the scroll bar inside the popover body
 11. design the input border
-12. 
+12. input with [input-range,datepicker,checkbox]
+13. Add the new features -> Choices
+14. 
