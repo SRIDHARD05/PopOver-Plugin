@@ -1,14 +1,4 @@
 class Popover {
-    /**
-     * Creates an instance of the Popover class.
-     * @param {string} triggerElement - The CSS selector for the element that triggers the popover.
-     * @param {Object} options - Configuration options for the popover.
-     * @param {string} [options.placement='bottom'] - The position of the popover relative to the trigger element.
-     * @param {string} [options.trigger='click'] - The event that triggers the popover (e.g., 'click', 'hover').
-     * @param {Array} options.content - An array of content objects that define the form elements in the popover.
-     * @param {Object} [options.submit] - Configuration for the submit button.
-     * @param {Object} [options.cancel] - Configuration for the cancel button.
-     */
     constructor(triggerElement, options) {
         this.triggerElement = document.querySelector(triggerElement);
         if (!this.triggerElement) {
@@ -19,9 +9,6 @@ class Popover {
         this.init();
     }
 
-    /**
-     * Initializes the popover and sets up event listeners.
-     */
     init() {
         const { placement = 'bottom', trigger = 'click' } = this.options;
 
@@ -43,6 +30,8 @@ class Popover {
         if (!this.popover) {
             this.createPopover();
         }
+        this.applyStyles();
+        this.applyClasses();
         this.positionPopover();
         this.popover.classList.add('show');
     }
@@ -82,12 +71,46 @@ class Popover {
         this.bindButtonEvents({ submit, cancel });
     }
 
-    /**
-     * Validates the content configuration to ensure it contains valid fields.
-     * @param {Array} content - The content configuration array.
-     * @returns {boolean} - True if the content is valid, otherwise false.
-     * @private
-     */
+    applyStyles() {
+        const { style = {} } = this.options;
+
+        if (style.popover) {
+            Object.assign(this.popover.style, style.popover);
+        }
+
+        const arrow = this.popover.querySelector('.popover-arrow');
+        if (arrow && style.arrow) {
+            Object.assign(arrow.style, style.arrow);
+        }
+
+        const body = this.popover.querySelector('.popover-body');
+        if (body && style.body) {
+            Object.assign(body.style, style.body);
+        }
+
+        if (this.popover.classList.contains('show') && style.show) {
+            Object.assign(this.popover.style, style.show);
+        }
+    }
+
+    applyClasses() {
+        const { class: classNames = {} } = this.options;
+
+        if (classNames.popover) {
+            this.popover.classList.add(...classNames.popover.split(' '));
+        }
+
+        const arrow = this.popover.querySelector('.popover-arrow');
+        if (arrow && classNames.arrow) {
+            arrow.classList.add(...classNames.arrow.split(' '));
+        }
+
+        const body = this.popover.querySelector('.popover-body');
+        if (body && classNames.body) {
+            body.classList.add(...classNames.body.split(' '));
+        }
+    }
+
     validateContent(content) {
         const validTypes = ['datepicker', 'checkbox', 'range', 'input', 'input-range'];
         return content.every((item) => {
@@ -120,24 +143,19 @@ class Popover {
         });
     }
 
-    /**
-     * Generates HTML for the content based on the content configuration.
-     * @param {Array} content - The content configuration array.
-     * @returns {string} - The HTML string for the content.
-     * @private
-     */
     generateContentHTML(content) {
         return content
             .map((item) => {
+                const customClasses = item.contentClasses?.join(' ') || ''; // Add user-defined classes
                 switch (item.type) {
                     case 'datepicker':
-                        return `<input type="date" id="${item.id}" class="${item.class}" name="${item.name}">`;
+                        return `<input type="date" id="${item.id}" class="${item.class} ${customClasses}" name="${item.name}">`;
 
                     case 'checkbox':
                         return item.items
                             .map(
                                 (checkbox) => `  
-                                    <div class="form-check">
+                                    <div class="form-check ${customClasses}">
                                         <input type="checkbox" id="${checkbox.id}" class="form-check-input ${checkbox.class}" name="${checkbox.name}">
                                         <label for="${checkbox.id}" class="form-check-label">${checkbox.name}</label>
                                     </div>`
@@ -146,13 +164,13 @@ class Popover {
 
                     case 'range':
                         return ` 
-                            <label for="${item.id}" class="form-label">${item.name}</label>
+                            <label for="${item.id}" class="form-label ${customClasses}">${item.name}</label>
                             <input type="range" id="${item.id}" class="form-range ${item.class}" min="${item.min}" max="${item.max}" step="${item.step}">
                         `;
 
                     case 'input':
-                        return `
-                            <label for="${item.id}" class="form-label">${item.label || ''}</label>
+                        return ` 
+                            <label for="${item.id}" class="form-label ${customClasses}">${item.label || ''}</label>
                             <input 
                                 type="text" 
                                 id="${item.id}" 
@@ -165,7 +183,7 @@ class Popover {
 
                     case 'input-range':
                         return ` 
-                            <div class="d-flex align-items-center gap-2">
+                            <div class="d-flex align-items-center gap-2 ${customClasses}">
                                 <label>${item.label || ''}</label>
                                 <input type="number" id="${item.minInputId}" class="form-control ${item.class}" placeholder="Min" min="${item.min}" max="${item.max}">
                                 <input type="number" id="${item.maxInputId}" class="form-control ${item.class}" placeholder="Max" min="${item.min}" max="${item.max}">
@@ -179,14 +197,6 @@ class Popover {
             .join('');
     }
 
-    /**
-     * Generates HTML for the buttons based on the submit and cancel configuration.
-     * @param {Object} buttons - The submit and cancel button configuration.
-     * @param {Object} buttons.submit - The submit button configuration.
-     * @param {Object} buttons.cancel - The cancel button configuration.
-     * @returns {string} - The HTML string for the buttons.
-     * @private
-     */
     generateButtonsHTML({ submit, cancel }) {
         const buttons = [];
         if (cancel) {
@@ -206,13 +216,6 @@ class Popover {
         return buttons.join('');
     }
 
-    /**
-     * Binds event listeners to the buttons inside the popover (submit, cancel).
-     * @param {Object} buttons - The submit and cancel button configuration.
-     * @param {Object} buttons.submit - The submit button configuration.
-     * @param {Object} buttons.cancel - The cancel button configuration.
-     * @private
-     */
     bindButtonEvents({ submit, cancel }) {
         if (cancel) {
             const cancelBtn = this.popover.querySelector(`#${cancel.id}`);
@@ -241,11 +244,6 @@ class Popover {
         }
     }
 
-    /**
-     * Collects the current values of the form elements inside the popover.
-     * @returns {Array} - An array of objects containing the form values.
-     * @private
-     */
     collectContentValues() {
         const { content = [] } = this.options;
         const values = [];
@@ -292,10 +290,6 @@ class Popover {
         return values;
     }
 
-    /**
-     * Positions the popover on the screen relative to the trigger element.
-     * @private
-     */
     positionPopover() {
         const { placement = 'bottom' } = this.options;
         const triggerRect = this.triggerElement.getBoundingClientRect();
@@ -330,3 +324,4 @@ class Popover {
         this.popover.style.position = 'absolute';
     }
 }
+
