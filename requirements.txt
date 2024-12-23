@@ -20,3 +20,119 @@ row = [
 12. input with [input-range,datepicker,checkbox]
 13. Add the new features -> Choices
 14. popover with input with nav items
+
+
+https://chatgpt.com/share/6769315e-4aa0-8011-8dab-800cb71c7ddd
+
+
+15. get the all user defined settings from the popover_body and update the user defined jsons value to add the user selected searches
+16. add the attribute (id/class) to the body of the popover and also placeholder name to send ito user search results to show the user selected results in the dashboard
+  document.addEventListener('DOMContentLoaded', function () {
+    let jsonData = [
+        {
+            type: '',
+            id: '',
+            name: '',
+            label: '',
+            placeholder: '',
+            defaultValue: '',
+            class: '',
+            results : {
+                // User results
+            }
+        },
+        {
+            type: '',
+            id: '',
+            name: '',
+            label: '',
+            class: '',
+            items: [
+                {
+                    placeholder: '',
+                    class: '',
+                    id: '',
+                    name: '',
+                    label: '',
+                    checked: false,
+                    results : {
+                        // User results
+                    }
+                }
+            ]
+        },
+        {
+            type: '',
+            id: '',
+            name: '',
+            label: '',
+            results : {
+                // User results
+            }
+        },
+    ];
+
+    var attribute = $(attribute).attr('id');
+    var name = $(attribute).attr('name');
+    const popover = new Popover(attribute, {
+        placement: 'bottom',
+        trigger: 'click',
+        attribute : attribute,
+        name : name,
+        popover_body: [
+            {
+                type: 'input',
+                id: 'input-field-1',
+                name: 'username',
+                label: 'Enter your username',
+                placeholder: 'Username',
+                defaultValue: '',
+                class: 'form-control'
+            },
+            {
+                type: 'checkbox',
+                id: 'checkbox-agree',
+                name: 'agree',
+                label: 'I agree to the terms and conditions',
+                class: 'form-check-input',
+                items: [
+                    {
+                        placeholder: 'Username',
+                        class: '',
+                        id: 'terms',
+                        name: 'terms',
+                        label: 'I accept the terms',
+                        checked: false
+                    }
+                ]
+            },
+            {
+                type: 'datepicker',
+                id: 'start-date',
+                name: 'start-date',
+                label: 'Start Date:'
+            },
+        ],
+        popover_footer: {
+            submit: {
+                id: 'submit-btn',
+                name: 'Submit',
+                class: 'btn btn-primary',
+                type: 'submit',
+                onClick: function (values) {
+                    console.log('Form submitted with values:', values);
+                }
+            },
+            cancel: {
+                id: 'cancel-btn',
+                name: 'Cancel',
+                class: 'btn btn-secondary',
+                type: 'hide',
+                onClick: function () {
+                    console.log('Popover canceled');
+                }
+            }
+        }
+    });
+
+});
