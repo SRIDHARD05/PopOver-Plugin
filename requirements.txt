@@ -19,4 +19,4 @@ row = [
 11. design the input border
 12. input with [input-range,datepicker,checkbox]
 13. Add the new features -> Choices
-14. 
+14. popover with input with nav items
