@@ -136,3 +136,6 @@ https://chatgpt.com/share/6769315e-4aa0-8011-8dab-800cb71c7ddd
     });
 
 });
+
+17. add the buttons inside the calender
+18. 
